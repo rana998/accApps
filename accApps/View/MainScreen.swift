@@ -14,7 +14,7 @@ struct MainScreen: View {
                 
                 // العنوان
                 VStack {
-                    Text("اختر من القائمة")
+                    Text("Choose a Card")
                         .font(.custom("Rubik-Medium", size: 61))
                         .foregroundColor(.darkBlue)
                         .multilineTextAlignment(.center)
@@ -35,7 +35,7 @@ struct MainScreen: View {
                             Button {
                                 // لاحقاً: افتحي شيت إضافة بطاقة
                             } label: {
-                                Label("إضافة بطاقة", systemImage: "plus")
+                                Label("Add a card", systemImage: "plus")
                             }
                             
                             // فاصل
@@ -46,7 +46,7 @@ struct MainScreen: View {
                                 isPageLocked.toggle()
                             } label: {
                                 Label(
-                                    isPageLocked ? "إلغاء قفل الصفحة" : "قفل الصفحة",
+                                    isPageLocked ? "Unlock Page" : "Lock Page",
                                     systemImage: isPageLocked ? "lock.open" : "lock"
                                 )
                             }

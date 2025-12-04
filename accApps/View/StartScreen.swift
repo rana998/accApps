@@ -48,7 +48,7 @@ struct splashScreen: View {
                 .position(x: 50, y: 450)
             logo()
             NavigationLink(destination: MainScreen()){
-                Button("إبدء"){
+                Button("Start"){
                 }
                 .frame(width: 300, height: 60)
                 .font(.system(size: 20, weight: .bold, design: .default))

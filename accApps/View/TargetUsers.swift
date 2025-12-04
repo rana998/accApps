@@ -38,7 +38,7 @@ struct TargetUsers: View {
                     .position(x: 50, y: 450)
                 GeometryReader { geo in
                     VStack(spacing: 0) {
-                        Text("اختر المستوى")
+                        Text("Choose a level")
                             .font(.custom("Rubik-Medium", size: 61))
                             .foregroundColor(.darkBlue)
                             .multilineTextAlignment(.center)
@@ -59,7 +59,7 @@ struct TargetUsers: View {
                                         .scaledToFit()
                                         .frame(height: 120)
 
-                                    Text("لا يستطيع تكوين جملة")
+                                    Text("Unable to create a sentences")
                                         .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(.black)
                                 }
@@ -79,7 +79,7 @@ struct TargetUsers: View {
                                         .scaledToFit()
                                         .frame(height: 120)
 
-                                    Text("يستطيع تكوين جملة")
+                                    Text("Able to create a sentences")
                                         .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(.black)
                                 }
