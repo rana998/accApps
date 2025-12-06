@@ -48,10 +48,10 @@ struct splashScreen: View {
                 .position(x: 50, y: 450)
             logo()
             NavigationLink(destination: MainScreen()){
-                Button("إبدء"){
+                Button("Start"){
                 }
                 .frame(width: 300, height: 60)
-                .font(.system(size: 20, weight: .bold, design: .default))
+                .font(.custom("Rubik-Medium", size: 20))
                 .foregroundColor(.primary)
                 .glassEffect(.clear.interactive().tint(Color(red: 191/255, green: 234/255, blue: 242/255)), in: .rect(cornerRadius: 17))
                 .padding()

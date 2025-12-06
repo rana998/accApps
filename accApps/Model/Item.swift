@@ -16,3 +16,11 @@ final class Item {
         self.timestamp = timestamp
     }
 }
+
+enum Category: Hashable {
+    case noun, name, verb
+}
+
+enum Route: Hashable {
+    case noun, name, verb, summary
+}

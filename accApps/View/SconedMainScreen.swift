@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct SconedMainScreen: View {
-    @State private var isPageLocked = false
     @StateObject var viewModel = ViewModel()
+    @State private var currentPage: Page = .noun
+    @State private var isPageLocked = false
+    @State private var sentacncePage = false
+    @State private var word = false
+    enum Page { case noun, name, verb }
     
     var body: some View {
         NavigationStack {
@@ -20,7 +24,7 @@ struct SconedMainScreen: View {
                 
                 // العنوان
                 VStack {
-                    Text("اختر من القائمة")
+                    Text("Choose From The Menu")
                         .font(.custom("Rubik-Medium", size: 61))
                         .foregroundColor(.darkBlue)
                         .multilineTextAlignment(.center)
@@ -31,7 +35,6 @@ struct SconedMainScreen: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .padding(.horizontal, 80)
                 
-                // زر المنيو الزجاجي (٣ نقاط) + خياراته
                 VStack {
                     HStack {
                         Spacer()
@@ -41,18 +44,16 @@ struct SconedMainScreen: View {
                             Button {
                                 // لاحقاً: افتحي شيت إضافة بطاقة
                             } label: {
-                                Label("إضافة بطاقة", systemImage: "plus")
+                                Label("Add Card", systemImage: "plus")
                             }
-                            
                             // فاصل
                             Divider()
-                            
                             // خيار قفل الصفحة
                             Button {
                                 isPageLocked.toggle()
                             } label: {
                                 Label(
-                                    isPageLocked ? "إلغاء قفل الصفحة" : "قفل الصفحة",
+                                    isPageLocked ? "Screen Unlock" : "Screen Lock",
                                     systemImage: isPageLocked ? "lock.open" : "lock"
                                 )
                             }
@@ -68,16 +69,74 @@ struct SconedMainScreen: View {
                                 .clipShape(Circle())
                         }
                     }
-                    .padding(40)
-                    nameList(viewModel: viewModel)
+                    .padding(.top, 70)
+                    .padding(.trailing ,30)
                     
-                    NavigationLink("التالي") {
+                    BubbleView(viewModel: viewModel, text: "", onRemove: {word = true})
+                    Divider()
+                        .frame(width: 900)
+                    HStack{
+                        Button("Verbs", systemImage: ""){
+                            currentPage = .verb
+                        }
+                        .frame(width: 100, height: 40)
+                        .font(.custom("Rubik-Medium", size: 18))
+                        .foregroundColor(.darkBlue)
+                        .glassEffect(.regular.tint(.green.opacity(0.3)).interactive(), in: .rect(cornerRadius: 20))
+                        .padding(.top,20)
+                        .padding(.bottom, 10)
+                        .padding(.leading, 10)
+                        
+                        Button("Names",systemImage: ""){
+                            currentPage = .name
+                        }
+                        .frame(width: 100, height: 40)
+                        .font(.custom("Rubik-Medium", size: 18))
+                        .foregroundColor(.darkBlue)
+                        .glassEffect(.regular.tint(.red.opacity(0.3)).interactive(), in: .rect(cornerRadius: 20))
+                        .padding(.top,20)
+                        .padding(.bottom, 10)
+                        .padding(.leading, 10)
+                        
+                        Button("Nouns",systemImage: ""){
+                            currentPage = .noun
+                        }
+                        .frame(width: 100, height: 40)
+                        .font(.custom("Rubik-Medium", size: 18))
+                        .foregroundColor(.darkBlue)
+                        .glassEffect(.regular.tint(.yellow.opacity(0.3)).interactive(), in: .rect(cornerRadius: 20))
+                        .padding(.top,20)
+                        .padding(.bottom, 10)
+                        .padding(.leading, 10)
+                        
+                    }
+                    
+                    switch currentPage {
+                    case .noun:
+                        nounList(viewModel: viewModel)
+                    case .name:
+                        nameList(viewModel: viewModel)
+                    case .verb:
                         verbList(viewModel: viewModel)
                     }
                     
                     Spacer()
+
                 }
                 .padding()
+                                
+                Button("Done"){
+                    sentacncePage = true
+                    viewModel.generateSentence()
+                }
+                .sheet(isPresented: $sentacncePage) {
+                    sentenceView(viewModel: viewModel, onClose: {sentacncePage = false})
+                }
+                .frame(width: 200, height: 60)
+                .font(.custom("Rubik-Medium", size: 20))
+                .foregroundColor(.primary)
+                .glassEffect(.clear.interactive().tint(Color.purple.opacity(0.3)), in: .rect(cornerRadius: 17))
+                .padding(.top, 650)
             }
             .navigationBarBackButtonHidden(true)
         }
@@ -86,149 +145,206 @@ struct SconedMainScreen: View {
 
 struct nameList: View {
     @ObservedObject var viewModel: ViewModel
-        
-        let names = ["Noora", "Jana", "Fatima", "Sara"] // Example list
+    private let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    let names = ["Rana", "Jana", "Fatimah"]
+    
     var body: some View {
-        HStack {
-            if let selected = viewModel.selectedName {
-                BubbleView(text: selected) {
-                    viewModel.selectedName = nil
-                }
-            } else {
-                Text("اختر إسم…")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 1060)
+        ScrollView{
+            LazyVGrid(columns: columns, spacing: 40) {
+                    ForEach(names, id: \.self) { name in
+                        Button(name) {
+                            viewModel.selectedNames.append(name)
+                        }
+                        .frame(width: 200, height: 200, alignment: .center)
+                        .font(.custom("Rubik-Medium", size: 20))
+                        .foregroundColor(Color.darkBlue)
+                        .glassEffect(.regular.tint(Color.lightBlue).interactive(), in: .rect(cornerRadius: 25))
+                    }
             }
-            Spacer()
+            .padding(.all, 40)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color("Background")))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
-        
-        // List of options
-        ForEach(names, id: \.self) { name in
-            Button {
-                viewModel.selectedName = name
-            } label: {
-                Text(name)
-                    .padding()
-                    .padding(.leading, 1060)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.lightBlue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-        }
-        
-        Spacer()
     }
 }
 
-
 struct verbList: View {
     @ObservedObject var viewModel: ViewModel
+    private let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    let verbs = ["Eat", "Drink", "Walk"]
     
-    let verbs = ["Eat", "Walk", "Drink"] // Example list
     var body: some View {
-        HStack {
-            if let selected = viewModel.selectedName {
-                BubbleView(text: selected) {
-                    viewModel.selectedName = nil
-                }
-            } else {
-                Text("اختر فعل…")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 1060)
+        ScrollView{
+            LazyVGrid(columns: columns, spacing: 40) {
+                    ForEach(verbs, id: \.self) { verb in
+                        Button(verb) {
+                            viewModel.selectedVerbs.append(verb)
+                        }
+                        .frame(width: 200, height: 200, alignment: .center)
+                        .font(.custom("Rubik-Medium", size: 20))
+                        .foregroundColor(Color.darkBlue)
+                        .glassEffect(.regular.tint(Color.lightBlue).interactive(), in: .rect(cornerRadius: 25))
+                    }
             }
-            Spacer()
+            .padding(.all, 40)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color("Background")))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
-        
-        // List of options
-        ForEach(verbs, id: \.self) { verb in
-            Button {
-                viewModel.selectedName = verb
-            } label: {
-                Text(verb)
-                    .padding()
-                    .padding(.leading, 1060)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.lightBlue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-        }
-        
-        Spacer()
     }
 }
 
 struct nounList: View {
     @ObservedObject var viewModel: ViewModel
+    private let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    let nouns = ["Her", "I", "Him", "Them","Us"]
     
-    let nouns = ["Me", "You", "We, Us"] // Example list
     var body: some View {
-        HStack {
-            if let selected = viewModel.selectedName {
-                BubbleView(text: selected) {
-                    viewModel.selectedName = nil
+        ScrollView{
+            LazyVGrid(columns: columns, spacing: 40) {
+                    ForEach(nouns, id: \.self) { noun in
+                        Button(noun) {
+                            viewModel.selectedNouns.append(noun)
+                        }
+                        .frame(width: 200, height: 200, alignment: .center)
+                        .font(.custom("Rubik-Medium", size: 20))
+                        .foregroundColor(Color.darkBlue)
+                        .glassEffect(.regular.tint(Color.lightBlue).interactive(), in: .rect(cornerRadius: 25))
+                    }
+            }
+            .padding(.all, 40)
+        }
+    }
+}
+struct BubbleView: View {
+    @ObservedObject var viewModel: ViewModel
+        let text: String
+        let onRemove: () -> Void
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                
+                ForEach(viewModel.selectedNouns, id: \.self) { item in
+                    Bubble(text: item, color: .yellow.opacity(0.3)) {
+                        viewModel.selectedNouns.removeAll { $0 == item }
+                    }
                 }
-            } else {
-                Text("اختر ضمير…")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 1060)
+                
+                ForEach(viewModel.selectedNames, id: \.self) { item in
+                    Bubble(text: item, color: .red.opacity(0.3)) {
+                        viewModel.selectedNames.removeAll { $0 == item }
+                    }
+                }
+                
+                ForEach(viewModel.selectedVerbs, id: \.self) { item in
+                    Bubble(text: item, color: .green.opacity(0.3)) {
+                        viewModel.selectedVerbs.removeAll { $0 == item }
+                    }
+                }
+                
             }
-            Spacer()
+            .padding(.horizontal)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color("Background")))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
-        
-        // List of options
-        ForEach(nouns, id: \.self) { noun in
-            Button {
-                viewModel.selectedName = noun
-            } label: {
-                Text(noun)
-                    .padding()
-                    .padding(.leading, 1060)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.lightBlue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-        }
-        
-        Spacer()
+        .frame(width: 900 ,height: 60)
     }
 }
 
-struct BubbleView: View {
+struct Bubble: View {
     let text: String
+    let color: Color
     let onRemove: () -> Void
     
     var body: some View {
         HStack(spacing: 6) {
             Text(text)
-                .foregroundColor(.white)
+                .font(.custom("Rubik-Medium", size: 20))
+                .foregroundColor(.darkBlue)
                 .padding(.vertical, 6)
                 .padding(.horizontal, 12)
 
-            
-            Button {
-                onRemove()
-            } label: {
+            Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.white.opacity(0.9))
-                    .padding(.trailing,10)
+                    .foregroundColor(.darkBlue.opacity(0.9))
+                    .padding(.trailing, 10)
             }
         }
-        .background(Color.gray)
+        .background(color)
         .clipShape(Capsule())
     }
 }
+
+
+
+
+struct sentenceView: View {
+    @ObservedObject var viewModel: ViewModel
+    @State private var show = true
+    let onClose: () -> Void
+    
+    var body: some View {
+        ZStack{
+            RoundedRectangle(cornerRadius: 30)
+                .frame(width: 825, height: 700)
+                .foregroundColor(.white)
+            VStack{
+                Text("The Sentence")
+                    .font(.custom("Rubik-Medium", size: 31))
+                    .foregroundColor(.darkBlue)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 70)
+                Spacer()
+                
+                Text(viewModel.generatedSentence.isEmpty ? "No sentence yet" : viewModel.generatedSentence)
+                    .font(.custom("Rubik-Medium", size: 51))
+                    .foregroundColor(.darkBlue)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 100)
+                Spacer()
+                Button {
+                    
+                } label: {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 60)
+                            .frame(width: 110, height: 110)
+                            .foregroundColor(Color.lightBlue)
+                        Image(systemName: "speaker.wave.2.fill")
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(Color.darkBlue)
+                            .font(Font.system(size: 30).bold())
+                            .background(Color.whitiesh)
+                            .cornerRadius(50)
+                    }
+                    .glassEffect(.regular.interactive())
+                }
+                .padding(.top, 10)
+                Spacer()
+                Button("Back"){
+                    onClose()
+                }
+                .frame(width: 325, height: 50)
+                .font(.custom("Rubik-Medium", size: 18))
+                .foregroundColor(Color.darkBlue)
+                .cornerRadius(40)
+                .glassEffect(.regular.tint(Color.lightBlue).interactive())
+                }
+                .padding(.bottom, 40)
+                Spacer()
+                
+            }
+            
+        }
+    }
 
 #Preview {
     SconedMainScreen()
