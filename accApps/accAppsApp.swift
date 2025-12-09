@@ -25,7 +25,7 @@ struct accAppsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            SplashScreen()
+            StartScreen()
         }
         .modelContainer(sharedModelContainer)
     }

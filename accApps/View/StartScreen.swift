@@ -47,7 +47,7 @@ struct splashScreen: View {
                 .rotationEffect(.degrees(-65), anchor: .trailing)
                 .position(x: 50, y: 450)
             logo()
-            NavigationLink(destination: MainScreen()){
+            NavigationLink(destination: TargetUsers()){
                 Button("Start"){
                 }
                 .frame(width: 300, height: 60)

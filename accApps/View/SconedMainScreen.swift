@@ -207,7 +207,7 @@ struct nounList: View {
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
-    let nouns = ["Her", "I", "Him", "Them","Us"]
+    let nouns = ["Her", "I", "Him", "Them","Us", ""]
     
     var body: some View {
         ScrollView{

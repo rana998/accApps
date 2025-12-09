@@ -47,7 +47,7 @@ struct TargetUsers: View {
                         Spacer()
                             .frame(height: geo.size.height * 0.30)
 
-                        HStack(spacing: 25) {
+                        HStack(spacing: 90) {
 
                             NavigationLink(destination:
                                             MainScreen()
