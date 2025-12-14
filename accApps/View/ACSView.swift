@@ -341,13 +341,13 @@ struct ACSView: View {
             .sheet(isPresented: $addCard){
                 AddSectionView()
                     .navigationTransition(.zoom(sourceID: "Add", in: animation))
-                    .presentationDetents([.height(420)]) // white sheet smaller (explicit)
+                    .presentationDetents([.height(720)]) // white sheet smaller (explicit)
             }
             .sheet(isPresented: $editCard){
                 if let section = currentlySelectedSection {
                     EditSectionView(section: section)
                         .navigationTransition(.zoom(sourceID: "Edit", in: animation))
-                        .presentationDetents([.height(420)]) // white sheet smaller (explicit)
+                        .presentationDetents([.height(720)]) // white sheet smaller (explicit)
                 } else {
                     Text("Select a section to edit")
                         .font(.custom("Rubik-Medium", size: 18))

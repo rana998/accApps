@@ -344,9 +344,9 @@ struct UCSView: View {
         VStack(spacing: 10) {
             ZStack(alignment: .topTrailing) {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.lightBlue) // Fixed tint as the card background
-                    .frame(height: 120)
-                    .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+//                    .fill(Color.lightBlue) // Fixed tint as the card background
+//                    .frame(width: 150 ,height: 120)
+//                    .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
 
                 if let data = card.imageData, let uiImage = UIImage(data: data) {
                     Image(uiImage: uiImage)
