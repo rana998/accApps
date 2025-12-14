@@ -86,6 +86,27 @@ final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
         currentFileURL = nil
     }
 
+    // Load an existing recording from a file URL (keeps encapsulation)
+    func loadExistingRecording(from url: URL) {
+        // Stop anything in progress
+        stopRecording()
+        stopPlayback()
+        // Replace current file URL with provided one (do not delete provided URL)
+        currentFileURL = url
+    }
+
+    // Convenience: load from raw Data by writing to a temp file
+    func loadExistingRecording(data: Data) {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString + ".m4a")
+        do {
+            try data.write(to: url, options: .atomic)
+            loadExistingRecording(from: url)
+        } catch {
+            print("Failed to write audio data to temp file: \(error)")
+        }
+    }
+
     // MARK: - AVAudioPlayerDelegate
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         let completion = playbackCompletion
@@ -95,3 +116,4 @@ final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
         }
     }
 }
+

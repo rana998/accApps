@@ -27,7 +27,7 @@ struct TargetUsers: View {
                         HStack(spacing: 170) {
 
                             NavigationLink(destination:
-                                            MainScreen()
+                                            UCSView()
                                                 .navigationBarBackButtonHidden(true)
                             ) {
                                 VStack {
@@ -47,7 +47,7 @@ struct TargetUsers: View {
                             }
 
                             NavigationLink(destination:
-                                            TestView()
+                                            ACSView()
                                                 .navigationBarBackButtonHidden(true)
                             ) {
                                 VStack {
@@ -74,6 +74,7 @@ struct TargetUsers: View {
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
                 }
             }
+            .navigationBarBackButtonHidden(true)
         }
     }
 }
