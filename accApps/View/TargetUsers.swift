@@ -27,9 +27,11 @@ struct TargetUsers: View {
 
                         HStack(spacing: 170) {
 
-                            NavigationLink(destination:
-                                            UCSView()
-                                                .navigationBarBackButtonHidden(true)
+                            NavigationLink(
+                                destination:
+                                    UCSView()
+                                        .recordLastRoute(.ucs) // persist user choice
+                                        .navigationBarBackButtonHidden(true)
                             ) {
                                 VStack {
                                     Image("Image1")
@@ -47,9 +49,11 @@ struct TargetUsers: View {
                                 .cornerRadius(40)
                             }
 
-                            NavigationLink(destination:
-                                            ACSView()
-                                                .navigationBarBackButtonHidden(true)
+                            NavigationLink(
+                                destination:
+                                    ACSView()
+                                        .recordLastRoute(.acs) // persist user choice
+                                        .navigationBarBackButtonHidden(true)
                             ) {
                                 VStack {
                                     Image("Image2")

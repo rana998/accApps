@@ -7,7 +7,8 @@
 import SwiftUI
 
 struct StartScreen: View {
-    @AppStorage(LastRouteKey.key) private var lastRouteRaw: String = Route.ucs.rawValue
+    // Keep storage, but do not default to a route here.
+    @AppStorage(LastRouteKey.key) private var lastRouteRaw: String = ""
     @AppStorage("hasLaunchedBefore") private var hasLaunchedBefore = false
     
     @State private var navigateToUCS = false
@@ -22,16 +23,27 @@ struct StartScreen: View {
                 
                 VStack{
                     logo()
-                    NavigationLink(destination: TargetUsers()){
-                        Button("Start"){
-                        }
-                        .frame(width: 300, height: 60)
-                        .font(.custom("Rubik-Medium", size: 20))
-                        .foregroundColor(.primary)
-                        .glassEffect(.clear.interactive().tint(Color(red: 191/255, green: 234/255, blue: 242/255)), in: .rect(cornerRadius: 17))
-                        .padding()
-                        .position(x: 600, y: 600)
-                    }                    // Hidden navigation triggers
+                        .padding(30)
+                    
+                    // Use a plain NavigationLink as the tappable control
+                    NavigationLink {
+                        TargetUsers()
+                    } label: {
+                        Text("Start")
+                            .frame(width: 300, height: 60)
+                            .font(.custom("Rubik-Medium", size: 20))
+                            .foregroundColor(.primary)
+                            .glassEffect(
+                                .clear
+                                    .interactive()
+                                    .tint(Color(red: 191/255, green: 234/255, blue: 242/255)),
+                                in: .rect(cornerRadius: 17)
+                            )
+                            .padding()
+                            .offset(y: 60)
+                    }
+
+                    // Hidden navigation triggers (programmatic routing)
                     NavigationLink("", isActive: $navigateToUCS) { UCSView() }
                         .hidden()
                     NavigationLink("", isActive: $navigateToACS) { ACSView() }
@@ -39,40 +51,15 @@ struct StartScreen: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            // Only auto-route after the first launch
-            if hasLaunchedBefore {
-                if Route(rawValue: lastRouteRaw) == .acs {
-                    navigateToACS = true
-                } else {
-                    navigateToUCS = true
-                }
-            } else {
-                // First launch: show StartScreen
-                hasLaunchedBefore = true
+            // Auto-route if a last route has been saved by TargetUsers
+            if lastRouteRaw == Route.ucs.rawValue {
+                navigateToUCS = true
+            } else if lastRouteRaw == Route.acs.rawValue {
+                navigateToACS = true
             }
-        }
-    }
-}
-
-struct splashScreen: View {
-    var body: some View {
-        ZStack{
-            logo()
-            NavigationLink(destination: TargetUsers()){
-                Button("Start"){
-                }
-                .frame(width: 300, height: 60)
-                .font(.custom("Rubik-Medium", size: 20))
-                .foregroundColor(.primary)
-                .glassEffect(.clear.interactive().tint(Color(red: 191/255, green: 234/255, blue: 242/255)), in: .rect(cornerRadius: 17))
-                .padding()
-                .position(x: 600, y: 600)
-            }
-            
         }
     }
 }
@@ -83,9 +70,7 @@ struct logo: View {
         Image("Logo")
             .resizable()
             .frame(width: 256, height: 256)
-            .position(x:600 ,y: 300)
-            .scaleEffect(swoop ? 0.1: 1.0)
-            .animation(.easeInOut(duration: 1.0), value: swoop)
+            .offset(y: -60)
     }
 }
 

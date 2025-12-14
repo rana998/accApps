@@ -17,7 +17,8 @@ extension View {
 
 private struct LastRouteRecorder: ViewModifier {
     let route: Route
-    @AppStorage(LastRouteKey.key) private var lastRouteRaw: String = Route.ucs.rawValue
+    // Do not seed a default; keep empty until user selects a level.
+    @AppStorage(LastRouteKey.key) private var lastRouteRaw: String = ""
 
     func body(content: Content) -> some View {
         content

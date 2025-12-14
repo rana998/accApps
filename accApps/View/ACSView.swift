@@ -363,7 +363,7 @@ struct ACSView: View {
                 .presentationDragIndicator(.hidden)     // applied: remove grabber for a cleaner look
             }
             .onAppear {
-                lastRouteRaw = Route.acs.rawValue
+//                lastRouteRaw = Route.acs.rawValue
                 isPageLocked = lock.isLocked
             }
             // Receive tapped word from SectionDetailView
