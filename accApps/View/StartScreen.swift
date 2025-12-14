@@ -17,16 +17,29 @@ struct StartScreen: View {
         NavigationStack{
             ZStack{
                 Image("splash")
+                    .resizable()
                     .ignoresSafeArea()
+                
                 VStack{
-                    splashScreen()
-                    // Hidden navigation triggers
+                    logo()
+                    NavigationLink(destination: TargetUsers()){
+                        Button("Start"){
+                        }
+                        .frame(width: 300, height: 60)
+                        .font(.custom("Rubik-Medium", size: 20))
+                        .foregroundColor(.primary)
+                        .glassEffect(.clear.interactive().tint(Color(red: 191/255, green: 234/255, blue: 242/255)), in: .rect(cornerRadius: 17))
+                        .padding()
+                        .position(x: 600, y: 600)
+                    }                    // Hidden navigation triggers
                     NavigationLink("", isActive: $navigateToUCS) { UCSView() }
                         .hidden()
                     NavigationLink("", isActive: $navigateToACS) { ACSView() }
                         .hidden()
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {

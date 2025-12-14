@@ -11,6 +11,7 @@ struct TargetUsers: View {
         NavigationStack {
             ZStack {
                 Image("splash")
+                    .resizable()
                     .ignoresSafeArea()
                 
                 GeometryReader { geo in
@@ -74,6 +75,7 @@ struct TargetUsers: View {
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationBarBackButtonHidden(true)
         }
     }

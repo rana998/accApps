@@ -283,7 +283,7 @@ struct UCSView: View {
             .sheet(isPresented: $showEditSheet) {
                 if let card = currentlySelectedCard {
                     // Pass a placeholder hex for whitiesh; change this to match your asset if needed.
-                    EditCardView(card: card, sectionTintHex: "#F5F5F5")
+                    EditCardView(card: card, sectionTintHex: "#BFEAF2")
                 } else {
                     Text("No card selected")
                         .font(.custom("Rubik-Medium", size: 18))
@@ -310,6 +310,7 @@ struct UCSView: View {
                 // Ensure playback stops when leaving this screen
                 audioService.stopPlayback()
             }
+            .navigationBarBackButtonHidden(true)
         }
     }
 
@@ -343,7 +344,7 @@ struct UCSView: View {
         VStack(spacing: 10) {
             ZStack(alignment: .topTrailing) {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(tint) // Fixed tint as the card background
+                    .fill(Color.lightBlue) // Fixed tint as the card background
                     .frame(height: 120)
                     .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
 
@@ -406,11 +407,13 @@ struct UCSView: View {
             Group {
                 if isInDeleteSelection && isSelectedForDelete {
                     RoundedRectangle(cornerRadius: 19)
-                        .stroke(tint.opacity(0.9), lineWidth: 3)
-                        .padding(-4)
+                        .stroke(Color.lightBlue.opacity(0.9), lineWidth: 3)
+                        .padding(.horizontal, -4)
+                        .padding(.vertical,-24)
+
                 } else if isInEditSelection && isSelectedForEdit {
                     RoundedRectangle(cornerRadius: 19)
-                        .stroke(tint.opacity(0.9), lineWidth: 3)
+                        .stroke(Color.lightBlue.opacity(0.9), lineWidth: 3)
                         .padding(.horizontal,-4)
                         .padding(.vertical,-24)
                 }
