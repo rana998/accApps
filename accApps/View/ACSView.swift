@@ -341,11 +341,13 @@ struct ACSView: View {
             .sheet(isPresented: $addCard){
                 AddSectionView()
                     .navigationTransition(.zoom(sourceID: "Add", in: animation))
+                    .presentationDetents([.height(420)]) // white sheet smaller (explicit)
             }
             .sheet(isPresented: $editCard){
                 if let section = currentlySelectedSection {
                     EditSectionView(section: section)
                         .navigationTransition(.zoom(sourceID: "Edit", in: animation))
+                        .presentationDetents([.height(420)]) // white sheet smaller (explicit)
                 } else {
                     Text("Select a section to edit")
                         .font(.custom("Rubik-Medium", size: 18))
@@ -359,11 +361,10 @@ struct ACSView: View {
                     words: chips.map { $0.text },
                     onClose: { showWordsSheet = false }
                 )
-                .presentationDetents([.large])          // applied: full-height like your add/edit sheets
-                .presentationDragIndicator(.hidden)     // applied: remove grabber for a cleaner look
+                .presentationDetents([.height(500)])   // blue sheet larger (explicit)
+                .presentationDragIndicator(.hidden)     // remove grabber for a cleaner look
             }
             .onAppear {
-//                lastRouteRaw = Route.acs.rawValue
                 isPageLocked = lock.isLocked
             }
             // Receive tapped word from SectionDetailView
