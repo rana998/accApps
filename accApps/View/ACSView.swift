@@ -138,8 +138,7 @@ struct ACSView: View {
                                                 editCard = true
                                             }
                                         }
-                                        // Keep disabled only for delete-selection if you still want to block other gestures.
-                                        .disabled(isSelecting)
+                                        // IMPORTANT: Do not disable the card in selection mode; we need taps to work.
                                     } else {
                                         // Normal mode: NavigationLink for navigation to detail
                                         NavigationLink {
@@ -154,7 +153,7 @@ struct ACSView: View {
                                             )
                                         }
                                         // No simultaneousGesture; NavigationLink owns the tap in normal mode.
-                                        .disabled(isSelecting) // should be false here, but keep consistent
+                                        .disabled(isSelecting) // harmless here because isSelecting is false in this branch
                                     }
                                 }
                             }
