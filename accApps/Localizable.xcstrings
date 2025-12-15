@@ -1,5 +1,5 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "ar",
   "strings" : {
     "" : {
 
@@ -27,12 +27,12 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إضافة بطاقة جديدة"
+            "value" : "اضافة بطاقة جديدة"
           }
         },
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Add a New Card"
           }
         }
@@ -44,12 +44,12 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إضافة قسم جديد"
+            "value" : "اضافة قسم جديد"
           }
         },
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Add New Section"
           }
         }
@@ -841,12 +841,12 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ابدء"
+            "value" : "أبدا"
           }
         },
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Start"
           }
         }
