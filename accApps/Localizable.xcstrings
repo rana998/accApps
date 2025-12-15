@@ -943,7 +943,7 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تعذر إنشاء جمل"
+            "value" : "لا يستطيع إنشاء جملة"
           }
         }
       }
