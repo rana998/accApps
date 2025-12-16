@@ -40,7 +40,7 @@ struct AddCardView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.lightBlue.opacity(0.5)
+                sectionTint.opacity(0.5)
                     .ignoresSafeArea()
 
                 VStack(spacing: 20) {
