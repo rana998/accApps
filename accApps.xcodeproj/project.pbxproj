@@ -99,7 +99,7 @@
 				};
 			};
 			buildConfigurationList = 25DF3AE12ED1E53F007F417E /* Build configuration list for PBXProject "accApps" */;
-			developmentRegion = en;
+			developmentRegion = ar;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
