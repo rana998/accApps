@@ -317,9 +317,13 @@ struct AddCardView: View {
             audioService.stopRecording()
             isRecording = false
             hasRecordedAudio = (audioService.currentFileURL != nil)
+            print("🎙️ stop -> url: \(String(describing: audioService.currentFileURL)) hasRecordedAudio=\(hasRecordedAudio)")
         } else {
             audioService.requestPermission { granted in
-                guard granted else { return }
+                guard granted else {
+                    print("❌ Microphone permission not granted")
+                    return
+                }
                 do {
                     try audioService.startRecording()
                     isRecording = true
@@ -335,6 +339,8 @@ struct AddCardView: View {
             audioService.stopPlayback()
             isPlaying = false
         } else {
+            // Prefer speaker on iPad for preview playback
+            audioService.playbackMode = .playAndRecordSpeaker
             do {
                 try audioService.startPlayback {
                     isPlaying = false
@@ -342,6 +348,7 @@ struct AddCardView: View {
                 isPlaying = true
             } catch {
                 print("Playback failed: \(error)")
+                isPlaying = false
             }
         }
     }
@@ -421,4 +428,3 @@ private struct PHPickerWrapper: UIViewControllerRepresentable {
         }
     }
 }
-

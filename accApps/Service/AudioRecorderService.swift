@@ -84,6 +84,16 @@ final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
         }
         try session.setActive(true)
 
+        // Force speaker when using playAndRecordSpeaker (helps on iPad)
+        if playbackMode == .playAndRecordSpeaker {
+            do {
+                try session.overrideOutputAudioPort(.speaker)
+            } catch {
+                // Non-fatal; continue without override
+                print("⚠️ overrideOutputAudioPort(.speaker) failed: \(error)")
+            }
+        }
+
         // Diagnostics: current route
         let route = session.currentRoute
         let inputs = route.inputs.map { $0.portType.rawValue }.joined(separator: ",")
@@ -148,4 +158,3 @@ final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
         }
     }
 }
-

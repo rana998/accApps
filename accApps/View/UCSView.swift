@@ -242,8 +242,13 @@ struct UCSView: View {
 
                     ToolbarItem(id: "Add", placement: .topBarTrailing) {
                         Button {
-                            ensureDefaultSection()
-                            showAddCardSheet = true
+                            // Always get the single persistent Default section, then present immediately
+                            do {
+                                defaultSection = try SectionItem.fetchOrCreateDefault(in: modelContext)
+                                showAddCardSheet = true
+                            } catch {
+                                print("Failed to get Default section: \(error)")
+                            }
                         } label: {
                             Image(systemName: "plus")
                                 .font(.custom("Rubik-Medium", size: 20))
@@ -305,18 +310,22 @@ struct UCSView: View {
             }
             // Add flow: present AddCardView for the hidden Default section
             .sheet(isPresented: $showAddCardSheet) {
-                if let target = defaultSection {
-                    AddCardView(section: target)
-                } else {
-                    Text("Default section missing")
-                        .font(.custom("Rubik-Medium", size: 18))
-                        .foregroundColor(.secondary)
-                        .padding()
-                }
+                // We guarantee defaultSection exists in onAppear and before presenting; unwrap directly for immediate sheet
+                AddCardView(section: defaultSection!)
             }
             .onAppear {
-                // Prepare the default section upfront so the sheet can open immediately
-                ensureDefaultSection()
+                // Ensure Default exists up front; retry once on next runloop if needed to avoid any race
+                do {
+                    defaultSection = try SectionItem.fetchOrCreateDefault(in: modelContext)
+                } catch {
+                    DispatchQueue.main.async {
+                        do {
+                            self.defaultSection = try SectionItem.fetchOrCreateDefault(in: modelContext)
+                        } catch {
+                            print("Failed to ensure Default section onAppear: \(error)")
+                        }
+                    }
+                }
             }
             .onDisappear {
                 // Ensure playback stops when leaving this screen
@@ -473,39 +482,9 @@ struct UCSView: View {
         }
         navigateToTargetUsers = true
     }
-
-    // MARK: - Default section helper
-    private func ensureDefaultSection() {
-        if defaultSection != nil { return }
-        do {
-            var descriptor = FetchDescriptor<SectionItem>()
-            descriptor.predicate = #Predicate { $0.name == "Default" }
-            descriptor.fetchLimit = 1
-            if let existing = try modelContext.fetch(descriptor).first {
-                defaultSection = existing
-            } else {
-                let section = SectionItem(
-                    name: "Default",
-                    colorHex: "#F5F5F5",
-                    iconName: "square.stack.3d.up"
-                )
-                modelContext.insert(section)
-                try modelContext.save()
-                defaultSection = section
-            }
-        } catch {
-            print("Failed to ensure default section: \(error)")
-        }
-    }
 }
 
 #Preview {
-    // Build an in-memory SwiftData container for previews
-    let schema = Schema([SectionItem.self, CardItem.self])
-    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: schema, configurations: [config])
-
     return UCSView()
-        .environmentObject(LockState())
-        .modelContainer(container)
+//        .environmentObject(LockState())
 }
