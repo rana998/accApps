@@ -19,10 +19,9 @@ struct EditCardView: View {
     @State private var hasExistingImage = false
 
     // Image picking
-    @State private var photoItem: PhotosPickerItem? = nil
     @State private var showCamera = false
     @State private var showPhotoSourceMenu = false
-    @State private var showPhotosPickerSheet = false
+    @State private var showPHPicker = false   // Present system photo library directly
 
     // Audio
     @State private var isRecording = false
@@ -135,7 +134,6 @@ struct EditCardView: View {
                     TextField("Card Name", text: $name)
                         .textInputAutocapitalization(.words)
                         .padding(.horizontal, 16)
-//                        .padding(.vertical, 4)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.clear.opacity(0.05))
@@ -267,21 +265,10 @@ struct EditCardView: View {
             .sheet(isPresented: $showCamera) {
                 CameraPicker(image: $pickedImage)
             }
-            // Photos picker sheet
-            .sheet(isPresented: $showPhotosPickerSheet) {
-                PhotosPicker(selection: $photoItem, matching: .images) {
-                    HStack {
-                        ProgressView().tint(.secondary)
-                        Text("Loading Photos…")
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                }
-            }
-            // Load the selected photo and dismiss the sheet
-            .onChange(of: photoItem) { _, newValue in
-                Task { await loadSelectedPhoto(newValue) }
+
+            // System photo library (PHPicker) sheet
+            .sheet(isPresented: $showPHPicker) {
+                PHPickerWrapper(image: $pickedImage)
             }
 
             // Photo source action sheet
@@ -291,7 +278,7 @@ struct EditCardView: View {
                 titleVisibility: .visible
             ) {
                 Button("Choose From Library") {
-                    showPhotosPickerSheet = true
+                    showPHPicker = true       // Open system library immediately
                 }
                 Button("Take a Photo") {
                     if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -389,18 +376,6 @@ struct EditCardView: View {
             }
         }
     }
-
-    @MainActor
-    private func loadSelectedPhoto(_ item: PhotosPickerItem?) async {
-        guard let item else { return }
-        if let data = try? await item.loadTransferable(type: Data.self),
-           let image = UIImage(data: data) {
-            pickedImage = image
-            hasExistingImage = true
-        }
-        // Dismiss the PhotosPicker sheet after selection
-        showPhotosPickerSheet = false
-    }
 }
 
 // MARK: - Camera Picker (UIKit)
@@ -435,6 +410,45 @@ private struct CameraPicker: UIViewControllerRepresentable {
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
+        }
+    }
+}
+
+// MARK: - PHPicker wrapper (UIKit)
+private struct PHPickerWrapper: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration(photoLibrary: .shared())
+        config.filter = .images
+        config.selectionLimit = 1
+        let vc = PHPickerViewController(configuration: config)
+        vc.delegate = context.coordinator
+        return vc
+    }
+
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: PHPickerWrapper
+        init(parent: PHPickerWrapper) { self.parent = parent }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            defer { picker.dismiss(animated: true) }
+            guard let provider = results.first?.itemProvider else { return }
+            if provider.canLoadObject(ofClass: UIImage.self) {
+                provider.loadObject(ofClass: UIImage.self) { object, _ in
+                    if let img = object as? UIImage {
+                        DispatchQueue.main.async {
+                            self.parent.image = img
+                        }
+                    }
+                }
+            }
         }
     }
 }

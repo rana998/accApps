@@ -635,5 +635,7 @@ private struct WordsSheetView: View {
 }
 
 #Preview {
-    ACSView()
+    return ACSView()
+        .environmentObject(LockState())
 }
+

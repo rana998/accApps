@@ -14,10 +14,9 @@ struct AddCardView: View {
     @State private var pickedImage: UIImage? = nil
 
     // Image picking
-    @State private var photoItem: PhotosPickerItem? = nil
     @State private var showCamera = false
     @State private var showPhotoSourceMenu = false
-    @State private var showPhotosPickerSheet = false
+    @State private var showPHPicker = false   // Present system photo library directly
 
     // Audio
     @State private var isRecording = false
@@ -163,7 +162,6 @@ struct AddCardView: View {
                                     bg: Color.white.opacity(0.18),
                                     size: 56
                                 )
-                                
                             }
                             .overlay(
                                 Circle().stroke(sectionTint.opacity(0.25), lineWidth: 2.5)
@@ -236,22 +234,10 @@ struct AddCardView: View {
             .sheet(isPresented: $showCamera) {
                 CameraPicker(image: $pickedImage)
             }
-            // Present the Photos picker UI immediately when requested
-            .sheet(isPresented: $showPhotosPickerSheet) {
-                PhotosPicker(selection: $photoItem, matching: .images) {
-                    // Minimal visible label so the sheet renders and the system picker appears
-                    HStack {
-                        ProgressView().tint(.secondary)
-                        Text("Loading Photos…")
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                }
-            }
-            // Load the selected photo and dismiss the sheet
-            .onChange(of: photoItem) { _, newValue in
-                Task { await loadSelectedPhoto(newValue) }
+
+            // System photo library (PHPicker) sheet
+            .sheet(isPresented: $showPHPicker) {
+                PHPickerWrapper(image: $pickedImage)
             }
 
             // Photo source action sheet
@@ -261,7 +247,7 @@ struct AddCardView: View {
                 titleVisibility: .visible
             ) {
                 Button("Choose From Library") {
-                    showPhotosPickerSheet = true
+                    showPHPicker = true       // Open system library immediately
                 }
                 Button("Take a Photo") {
                     if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -359,17 +345,6 @@ struct AddCardView: View {
             }
         }
     }
-
-    @MainActor
-    private func loadSelectedPhoto(_ item: PhotosPickerItem?) async {
-        guard let item else { return }
-        if let data = try? await item.loadTransferable(type: Data.self),
-           let image = UIImage(data: data) {
-            pickedImage = image
-        }
-        // Dismiss the PhotosPicker sheet after selection
-        showPhotosPickerSheet = false
-    }
 }
 
 // MARK: - Camera Picker (UIKit)
@@ -407,3 +382,43 @@ private struct CameraPicker: UIViewControllerRepresentable {
         }
     }
 }
+
+// MARK: - PHPicker wrapper (UIKit)
+private struct PHPickerWrapper: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration(photoLibrary: .shared())
+        config.filter = .images
+        config.selectionLimit = 1
+        let vc = PHPickerViewController(configuration: config)
+        vc.delegate = context.coordinator
+        return vc
+    }
+
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: PHPickerWrapper
+        init(parent: PHPickerWrapper) { self.parent = parent }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            defer { picker.dismiss(animated: true) }
+            guard let provider = results.first?.itemProvider else { return }
+            if provider.canLoadObject(ofClass: UIImage.self) {
+                provider.loadObject(ofClass: UIImage.self) { object, _ in
+                    if let img = object as? UIImage {
+                        DispatchQueue.main.async {
+                            self.parent.image = img
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

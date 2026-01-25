@@ -40,7 +40,7 @@ struct UCSView: View {
     ]
 
     // Fixed tint (since UCSView is not tied to a section)
-    private var tint: Color { .whitiesh }
+    private var tint: Color { .lightBlue }
 
     // Reordered cards when isPressed (favorites first)
     private var displayedCards: [CardItem] {
@@ -104,12 +104,24 @@ struct UCSView: View {
                                             guard let data = card.audioData else { return }
                                             audioService.stopPlayback()
                                             audioService.loadExistingRecording(data: data)
+
+                                            // Try first playback mode (.playback + .mixWithOthers)
+                                            audioService.playbackMode = .playbackMix
                                             do {
                                                 try audioService.startPlayback {
                                                     // finished
                                                 }
                                             } catch {
-                                                // playback error: ignore or log
+                                                print("Playback with .playbackMix failed: \(error)")
+                                                // Fallback: .playAndRecord + .defaultToSpeaker
+                                                audioService.playbackMode = .playAndRecordSpeaker
+                                                do {
+                                                    try audioService.startPlayback {
+                                                        // finished
+                                                    }
+                                                } catch {
+                                                    print("Playback with .playAndRecordSpeaker failed: \(error)")
+                                                }
                                             }
                                         }
                                     }
@@ -341,84 +353,83 @@ struct UCSView: View {
         isSelectedForEdit: Bool
     ) -> some View {
 
-        VStack(spacing: 10) {
-            ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 12)
-//                    .fill(Color.lightBlue) // Fixed tint as the card background
-//                    .frame(width: 150 ,height: 120)
-//                    .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
-
-                if let data = card.imageData, let uiImage = UIImage(data: data) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 180 ,height: 120)
-                        .clipped()
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.black.opacity(0.05))
-                        )
-                        .frame(maxWidth: .infinity, alignment: .center)
-                } else {
-                    Image(systemName: "photo")
-                        .font(.system(size: 28, weight: .regular))
-                        .foregroundColor(.primary.opacity(0.7))
-                }
-
-                // Favorite star overlay (top-right)
-                Button {
-                    card.isFavorite.toggle()
-                    try? modelContext.save()
-                } label: {
-                    Image(systemName: card.isFavorite ? "star.fill" : "star")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(card.isFavorite ? .orange : .darkBlue.opacity(0.8))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 60, style: .continuous)
-                                .fill(tint.opacity(0.7))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 60, style: .continuous)
-                                        .stroke(Color.white.opacity(0.35), lineWidth: 0.5)
-                                )
-                                .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 1)
-                        )
-                }
-                .buttonStyle(.plain)
-                .offset(x: 0, y: -15)
-            }
-
-            Text(card.name)
-                .font(.custom("Rubik-Medium", size: 14))
-                .foregroundColor(.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .padding(10)
-        .background(
+        ZStack {
+            // Card background (fixed size)
             RoundedRectangle(cornerRadius: 17)
                 .fill(tint.opacity(0.9))
                 .frame(width: 200, height: 200)
                 .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 17))
-        )
+
+            // Content inside the card
+            VStack(spacing: 8) {
+                // Image area (fixed 180x180, centered)
+                if let data = card.imageData, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 180, height: 150) // leave room for name within 200x200
+                        .clipped()
+                        .cornerRadius(12)
+                } else {
+                    Image(systemName: "photo")
+                        .font(.system(size: 28, weight: .regular))
+                        .foregroundColor(.primary.opacity(0.7))
+                        .frame(width: 180, height: 150)
+                        .cornerRadius(12)
+
+                }
+
+                // Name inside the card
+                Text(card.name)
+                    .font(.custom("Rubik-Medium", size: 14))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .frame(width: 180)
+            }
+            .frame(width: 180, height: 180, alignment: .center)
+        }
+        // Favorite star overlay anchored inside the card
+        .overlay(alignment: .topTrailing) {
+            Button {
+                card.isFavorite.toggle()
+                try? modelContext.save()
+            } label: {
+                Image(systemName: card.isFavorite ? "star.fill" : "star")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(card.isFavorite ? .orange : .darkBlue.opacity(0.8))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 60, style: .continuous)
+                            .fill(tint.opacity(0.7))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 60, style: .continuous)
+                                    .stroke(Color.white.opacity(0.35), lineWidth: 0.5)
+                            )
+                            .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+            .padding(8) // keeps it inside the 200x200 card
+        }
+        // Selection highlight
         .overlay(
             Group {
                 if isInDeleteSelection && isSelectedForDelete {
                     RoundedRectangle(cornerRadius: 19)
                         .stroke(Color.lightBlue.opacity(0.9), lineWidth: 3)
                         .padding(.horizontal, -4)
-                        .padding(.vertical,-24)
-
+                        .padding(.vertical, -4)
                 } else if isInEditSelection && isSelectedForEdit {
                     RoundedRectangle(cornerRadius: 19)
                         .stroke(Color.lightBlue.opacity(0.9), lineWidth: 3)
-                        .padding(.horizontal,-4)
-                        .padding(.vertical,-24)
+                        .padding(.horizontal, -4)
+                        .padding(.vertical, -4)
                 }
             }
         )
+        .padding(10)
     }
 
     // MARK: - Delete helpers
@@ -489,5 +500,12 @@ struct UCSView: View {
 }
 
 #Preview {
-    UCSView()
+    // Build an in-memory SwiftData container for previews
+    let schema = Schema([SectionItem.self, CardItem.self])
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: schema, configurations: [config])
+
+    return UCSView()
+        .environmentObject(LockState())
+        .modelContainer(container)
 }

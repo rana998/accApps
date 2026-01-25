@@ -2,6 +2,11 @@ import AVFoundation
 
 final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
 
+    enum PlaybackMode {
+        case playbackMix            // AVAudioSession.Category.playback + .mixWithOthers
+        case playAndRecordSpeaker   // AVAudioSession.Category.playAndRecord + .defaultToSpeaker
+    }
+
     private var recorder: AVAudioRecorder?
     private var player: AVAudioPlayer?
 
@@ -9,6 +14,9 @@ final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
     private(set) var currentFileURL: URL?
 
     private var playbackCompletion: (() -> Void)?
+
+    // Choose which playback mode to use. Start with `.playbackMix`, switch to `.playAndRecordSpeaker` if needed.
+    var playbackMode: PlaybackMode = .playbackMix
 
     // طلب إذن الميكروفون
     func requestPermission(completion: @escaping (Bool) -> Void) {
@@ -54,21 +62,45 @@ final class AudioRecorderService: NSObject, AVAudioPlayerDelegate {
     // تشغيل التسجيل
     func startPlayback(completion: @escaping () -> Void) throws {
         guard let url = currentFileURL else {
-            print("❌ لا يوجد ملف صوت لتشغيله")
+            print("❌ No file URL to play")
             return
         }
 
+        // Diagnostics: file size
+        let fileSize = (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.intValue ?? -1
+        print("▶️ Attempting playback: \(url.lastPathComponent), size=\(fileSize) bytes")
+
+        // Configure session based on selected mode
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playback,
-                                mode: .default,
-                                options: [.defaultToSpeaker])
+        switch playbackMode {
+        case .playbackMix:
+            try session.setCategory(.playback,
+                                    mode: .default,
+                                    options: [.mixWithOthers])
+        case .playAndRecordSpeaker:
+            try session.setCategory(.playAndRecord,
+                                    mode: .default,
+                                    options: [.defaultToSpeaker])
+        }
         try session.setActive(true)
 
-        player = try AVAudioPlayer(contentsOf: url)
-        player?.delegate = self
-        player?.prepareToPlay()
-        playbackCompletion = completion
-        player?.play()
+        // Diagnostics: current route
+        let route = session.currentRoute
+        let inputs = route.inputs.map { $0.portType.rawValue }.joined(separator: ",")
+        let outputs = route.outputs.map { $0.portType.rawValue }.joined(separator: ",")
+        print("🔊 AVAudioSession route -> inputs: [\(inputs)] outputs: [\(outputs)]")
+
+        do {
+            player = try AVAudioPlayer(contentsOf: url)
+            player?.delegate = self
+            player?.prepareToPlay()
+            playbackCompletion = completion
+            let ok = player?.play() ?? false
+            print(ok ? "✅ Playback started" : "⚠️ AVAudioPlayer.play() returned false")
+        } catch {
+            print("❌ AVAudioPlayer init error: \(error)")
+            throw error
+        }
     }
 
     func stopPlayback() {
