@@ -61,6 +61,9 @@
         }
       }
     },
+    "Add Selected" : {
+
+    },
     "All data will be deleted permanently" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -338,6 +341,9 @@
         }
       }
     },
+    "Deselect All" : {
+
+    },
     "Done" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -519,6 +525,9 @@
         }
       }
     },
+    "Library" : {
+
+    },
     "Loading Photos…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -535,6 +544,9 @@
           }
         }
       }
+    },
+    "Loading..." : {
+
     },
     "No card selected" : {
       "extractionState" : "manual",
@@ -844,6 +856,9 @@
           }
         }
       }
+    },
+    "Select All" : {
+
     },
     "SF Symbol name (e.g. star.fill)" : {
       "localizations" : {

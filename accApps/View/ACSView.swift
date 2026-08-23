@@ -48,6 +48,9 @@ struct ACSView: View {
     // Show sheet with all words when Done is tapped
     @State private var showWordsSheet = false
 
+    @State private var showLibrarySheet = false
+    @State private var libraryPickerViewModel: ACSLibraryPickerViewModel? = nil
+
     // Grid layout for sections
     private let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 180), spacing: 16)
@@ -286,19 +289,8 @@ struct ACSView: View {
                             }
 
                             Button {
-                                // Add from library: create sections with given names
-                                let libraryNames = [
-                                    "أبغى","لا","نعم","أكثر","خلاص","ساعدني","افتح","أغلق","أعطني","تعال","روح","انتظر","أكل","ماء","حمام","لعب","نوم","تعبان","مبسوط","زعلان"
-                                ]
-                                for name in libraryNames {
-                                    let section = SectionItem(name: name, colorHex: "", iconName: "questionmark")
-                                    modelContext.insert(section)
-                                }
-                                do {
-                                    try modelContext.save()
-                                } catch {
-                                    print("Failed to add library sections: \(error)")
-                                }
+                                libraryPickerViewModel = ACSLibraryPickerViewModel(modelContext: modelContext)
+                                showLibrarySheet = true
                             } label: {
                                 Label("Add From Library", systemImage: "books.vertical")
                             }
@@ -376,6 +368,26 @@ struct ACSView: View {
                     Text("Select a section to edit")
                         .font(.custom("Rubik-Medium", size: 18))
                         .foregroundColor(.secondary)
+                        .padding()
+                }
+            }
+            .sheet(isPresented: $showLibrarySheet) {
+                if let vm = libraryPickerViewModel {
+                    ACSLibraryPickerSheet(
+                        viewModel: vm,
+                        onCancel: { showLibrarySheet = false },
+                        onAddSelected: {
+                            do {
+                                try vm.addSelectedLibraryContent()
+                                showLibrarySheet = false
+                            } catch {
+                                print("Failed to add selected library content: \(error)")
+                            }
+                        }
+                    )
+                    .presentationDetents([.medium, .large])
+                } else {
+                    Text("Loading...")
                         .padding()
                 }
             }
