@@ -276,27 +276,52 @@ struct ACSView: View {
                         .disabled(isPageLocked || lock.isLocked)
                     }
 
-                    ToolbarItem(id: "Edit", placement: .topBarTrailing){
-                        Button{
-                            isEditSelecting = true
-                            currentlySelectedSection = nil
-                        } label: {
-                            Image(systemName: "pencil")
-                                .font(.custom("Rubik-Medium", size: 20))
-                                .foregroundColor(.darkBlue)
-                        }
-                        .disabled(isPageLocked || lock.isLocked)
-                    }
-
                     ToolbarItem(id: "Add", placement: .topBarTrailing){
-                        Button{
-                            addCard.toggle()
+                        Menu {
+                            Button {
+                                // Custom: same behavior as current Add
+                                addCard.toggle()
+                            } label: {
+                                Label("Add Custom Section", systemImage: "square.and.pencil")
+                            }
+
+                            Button {
+                                // Add from library: create sections with given names
+                                let libraryNames = [
+                                    "أبغى","لا","نعم","أكثر","خلاص","ساعدني","افتح","أغلق","أعطني","تعال","روح","انتظر","أكل","ماء","حمام","لعب","نوم","تعبان","مبسوط","زعلان"
+                                ]
+                                for name in libraryNames {
+                                    let section = SectionItem(name: name, colorHex: "", iconName: "questionmark")
+                                    modelContext.insert(section)
+                                }
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    print("Failed to add library sections: \(error)")
+                                }
+                            } label: {
+                                Label("Add From Library", systemImage: "books.vertical")
+                            }
                         } label: {
                             Image(systemName: "plus")
                                 .font(.custom("Rubik-Medium", size: 20))
                                 .foregroundColor(.darkBlue)
                         }
                         .disabled(isPageLocked || lock.isLocked)
+                    }
+
+                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+                    ToolbarItem(id: "Edit", placement: .topBarTrailing){
+                        Button{
+                            isEditSelecting = true
+                            currentlySelectedSection = nil
+                        } label: {
+                            Text("Edit")
+                                .font(.custom("Rubik-Medium", size: 20))
+                                .foregroundColor(.darkBlue)
+                        }
+                        .disabled(isPageLocked || lock.isLocked || displayedSections.isEmpty)
                     }
 
                     ToolbarSpacer(.fixed, placement: .topBarTrailing)
@@ -312,7 +337,7 @@ struct ACSView: View {
                                 .font(.custom("Rubik-Medium", size: 20))
                                 .foregroundColor(.darkBlue)
                         }
-                        .disabled(isPageLocked || lock.isLocked)
+                        .disabled(isPageLocked || lock.isLocked || displayedSections.isEmpty)
                     }
                 }
             }

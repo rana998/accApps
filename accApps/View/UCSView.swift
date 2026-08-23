@@ -226,20 +226,6 @@ struct UCSView: View {
                         .matchedTransitionSource(id: "Settings", in: animation)
                         .disabled(lock.isLocked)
                     }
-
-                    ToolbarItem(id: "Edit", placement: .topBarTrailing) {
-                        Button {
-                            // Enter edit-selection mode
-                            isEditSelecting = true
-                            currentlySelectedCard = nil
-                        } label: {
-                            Image(systemName: "pencil")
-                                .font(.custom("Rubik-Medium", size: 20))
-                                .foregroundColor(.darkBlue)
-                        }
-                        .disabled(lock.isLocked || displayedCards.isEmpty)
-                    }
-
                     ToolbarItem(id: "Add", placement: .topBarTrailing) {
                         Button {
                             // Always get the single persistent Default section, then present immediately
@@ -254,9 +240,24 @@ struct UCSView: View {
                                 .font(.custom("Rubik-Medium", size: 20))
                                 .foregroundColor(.darkBlue)
                         }
-                        .disabled(lock.isLocked)
+                        .disabled(lock.isLocked || defaultSection == nil)
                     }
 
+                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                    
+                    ToolbarItem(id: "Edit", placement: .topBarTrailing) {
+                        Button {
+                            // Enter edit-selection mode
+                            isEditSelecting = true
+                            currentlySelectedCard = nil
+                        } label: {
+                            Text("Edit")
+                                .font(.custom("Rubik-Medium", size: 20))
+                                .foregroundColor(.darkBlue)
+                        }
+                        .disabled(lock.isLocked || displayedCards.isEmpty)
+                    }
+                    
                     ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
                     // Select for delete like Photos
@@ -310,8 +311,17 @@ struct UCSView: View {
             }
             // Add flow: present AddCardView for the hidden Default section
             .sheet(isPresented: $showAddCardSheet) {
-                // We guarantee defaultSection exists in onAppear and before presenting; unwrap directly for immediate sheet
-                AddCardView(section: defaultSection!)
+                if let section = defaultSection {
+                    AddCardView(section: section)
+                } else {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                        Text("Preparing…")
+                            .font(.custom("Rubik-Medium", size: 16))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                }
             }
             .onAppear {
                 // Ensure Default exists up front; retry once on next runloop if needed to avoid any race

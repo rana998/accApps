@@ -38,6 +38,12 @@
         }
       }
     },
+    "Add Custom Section" : {
+
+    },
+    "Add From Library" : {
+
+    },
     "Add New Section" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -349,6 +355,17 @@
         }
       }
     },
+    "Edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعديل"
+          }
+        }
+      }
+    },
     "Edit Card" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -638,6 +655,9 @@
         }
       }
     },
+    "Preparing…" : {
+
+    },
     "Recording failed to start:" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -797,12 +817,12 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "اختيار"
+            "value" : "تحديد"
           }
         },
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Select"
           }
         }
